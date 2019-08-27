@@ -1,7 +1,11 @@
 phina.namespace(function() {
 
-  phina.define('MainScene', {
-    superClass: 'BaseScene',
+  phina.define('World', {
+    superClass: 'DisplayElement',
+
+    mapSizeW: 20,
+    mapSizeH: 20,
+    mapChipSize: 32,
 
     init: function(options) {
       this.superInit();
@@ -9,12 +13,9 @@ phina.namespace(function() {
     },
 
     setup: function() {
-      const back = RectangleShape({ width: SCREEN_WIDTH, height: SCREEN_HEIGHT, fill: "black" })
+      this.mapBase = DisplayElement()
         .setPosition(SCREEN_WIDTH_HALF, SCREEN_HEIGHT_HALF)
         .addChildTo(this);
-      this.registDispose(back);
-
-      this.world = World().addChildTo(this);
     },
 
     update: function() {
