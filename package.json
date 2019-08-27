@@ -1,0 +1,25 @@
+{
+  "name": "holysword",
+  "version": "1.0.0",
+  "description": "ActionGame",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minimo/holysword.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/minimo/holysword/issues"
+  },
+  "homepage": "https://github.com/minimo/holysword#readme",
+  "dependencies": {
+    "filecopy": "^4.0.2",
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
+    "minimist": "^1.2.0"
+  }
+}
