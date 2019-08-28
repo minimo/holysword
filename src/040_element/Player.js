@@ -6,55 +6,53 @@ phina.namespace(function() {
     init: function(options) {
       this.superInit();
 
+      this.setShadow();
+
       this.sprite = Sprite("actor4", 32, 32)
         .setFrameIndex(0)
         .addChildTo(this);
 
-      this.nowAnimation = "stand";
+      this.nowAnimation = "down";
     },
 
     update: function() {
+      this.isAnimation = false;
       const app = phina_app;
       const ctrl = app.controller;
+      let animationName = ""
       if (ctrl.up) {
         this.y -= 2;
-        if (ctrl.left) {
-          this.x -= 2;
-          this.setAnimation("upleft");
-        } else if (ctrl.right) {
-          this.x += 2;
-          this.setAnimation("upright");
-        } else {
-          this.setAnimation("up");
-        }
+        animationName = "up";
       } else if (ctrl.down) {
         this.y += 2;
-        if (ctrl.left) {
-          this.x -= 2;
-          this.setAnimation("downleft");
-        } else if (ctrl.right) {
-          this.x += 2;
-          this.setAnimation("downright");
-        } else {
-          this.setAnimation("down");
-        }
-      } else if (ctrl.left) {
+        animationName = "down";
+      }
+      if (ctrl.left) {
         this.x -= 2;
-        this.setAnimation("left");
+        animationName += "left";
       } else if (ctrl.right) {
         this.x += 2;
-        this.setAnimation("right");
+        animationName += "right";
       }
 
       if (ctrl.jump) {
         if (!this.isJump) {
           this.isJump = true;
           this.sprite.tweener.clear()
-            .by({ y: -32 }, 200, "easeOutSine")
-            .by({ y: 32 }, 200, "easeInSine")
+            .by({ y: -32 }, 250, "easeOutSine")
+            .by({ y: 32 }, 250, "easeInSine")
             .call(() => this.isJump = false)
           }
       }
+
+      if (ctrl.attack) {
+        if (!this.isAttack) {
+          this.isAttack = true;
+        }
+      }
+
+      this.setAnimation(animationName);
+      if (ctrl.up || ctrl.down || ctrl.left || ctrl.right || this.isJump || this.isAttack) this.isAnimation = true;
     },
 
     setupAnimation: function() {
