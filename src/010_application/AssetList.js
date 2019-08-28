@@ -16,7 +16,8 @@ phina.namespace(function() {
           case "preload":
             return {
               image: {
-                "actor": "assets/textures/actor4.png",
+                "actor4": "assets/textures/actor4.png",
+                "shadow": "assets/textures/shadow.png",
               },
             };
             case "common":

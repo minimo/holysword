@@ -79,9 +79,8 @@ phina.namespace(function() {
           left: gp.getKey("left") || kb.getKey("left"),
           right: gp.getKey("right") || kb.getKey("right"),
 
-          attack: gp.getKey("X") || kb.getKey("Z"),
-          jump:   gp.getKey("up") || gp.getKey("A") || kb.getKey("up") || kb.getKey("X"),
-          change: gp.getKey("B") || kb.getKey("C"),
+          attack: gp.getKey("A") || kb.getKey("X"),
+          jump:   gp.getKey("X") || kb.getKey("Z"),
           menu:   gp.getKey("start") || kb.getKey("escape"),
 
           a: gp.getKey("A") || kb.getKey("Z"),

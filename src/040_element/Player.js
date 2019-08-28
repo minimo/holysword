@@ -5,6 +5,83 @@ phina.namespace(function() {
 
     init: function(options) {
       this.superInit();
+
+      this.sprite = Sprite("actor4", 32, 32)
+        .setFrameIndex(0)
+        .addChildTo(this);
+
+      this.nowAnimation = "stand";
+    },
+
+    update: function() {
+      const app = phina_app;
+      const ctrl = app.controller;
+      if (ctrl.up) {
+        this.y -= 2;
+        if (ctrl.left) {
+          this.x -= 2;
+          this.setAnimation("upleft");
+        } else if (ctrl.right) {
+          this.x += 2;
+          this.setAnimation("upright");
+        } else {
+          this.setAnimation("up");
+        }
+      } else if (ctrl.down) {
+        this.y += 2;
+        if (ctrl.left) {
+          this.x -= 2;
+          this.setAnimation("downleft");
+        } else if (ctrl.right) {
+          this.x += 2;
+          this.setAnimation("downright");
+        } else {
+          this.setAnimation("down");
+        }
+      } else if (ctrl.left) {
+        this.x -= 2;
+        this.setAnimation("left");
+      } else if (ctrl.right) {
+        this.x += 2;
+        this.setAnimation("right");
+      }
+
+      if (ctrl.jump) {
+        if (!this.isJump) {
+          this.isJump = true;
+          this.sprite.tweener.clear()
+            .by({ y: -32 }, 200, "easeOutSine")
+            .by({ y: 32 }, 200, "easeInSine")
+            .call(() => this.isJump = false)
+          }
+      }
+    },
+
+    setupAnimation: function() {
+      this.spcialAnimation = false;
+      this.frame = [];
+      this.frame["stand"] = [13, 14];
+      this.frame["jump"] = [36, "stop"];
+
+      this.frame["up"] =   [ 9, 10, 11, 10];
+      this.frame["down"] = [ 0,  1,  2,  1];
+      this.frame["left"] = [ 3,  4,  5,  4];
+      this.frame["right"] = [ 6,  7,  8,  7];
+      this.frame["downleft"] = [ 48,  49,  50,  49];
+      this.frame["upleft"] = [ 51,  52,  53,  52];
+      this.frame["downright"] = [ 54,  55,  56,  55];
+      this.frame["upright"] = [ 57,  58,  59,  58];
+
+
+      this.frame["attack"] = [ 41, 42, 43, 44, "stop"];
+      this.frame["defense"] = [ 41, 42, 43, 44, "stop"];
+      this.frame["damage"] = [ 18, 19, 20];
+      this.frame["drop"] = [18, 19, 20];
+      this.frame["dead"] = [18, 19, 20, 33, 34, 35, "stop"];
+      this.frame["clear"] = [24, 25, 26];
+      this.frame["stun"] = [ 18, 19, 20];
+      this.index = -1;
+      return this;
     },
 
   });
