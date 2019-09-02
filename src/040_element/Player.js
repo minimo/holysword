@@ -51,8 +51,8 @@ phina.namespace(function() {
         }
       }
 
-      this.setAnimation(animationName);
       if (ctrl.up || ctrl.down || ctrl.left || ctrl.right || this.isJump || this.isAttack) this.isAnimation = true;
+      this.setAnimation(animationName);
     },
 
     setupAnimation: function() {
@@ -72,7 +72,6 @@ phina.namespace(function() {
 
 
       this.frame["attack"] = [ 41, 42, 43, 44, "stop"];
-      this.frame["defense"] = [ 41, 42, 43, 44, "stop"];
       this.frame["damage"] = [ 18, 19, 20];
       this.frame["drop"] = [18, 19, 20];
       this.frame["dead"] = [18, 19, 20, 33, 34, 35, "stop"];
