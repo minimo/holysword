@@ -19,7 +19,7 @@ phina.namespace(function() {
       this.isAnimation = false;
       const app = phina_app;
       const ctrl = app.controller;
-      let animationName = ""
+      let animationName = "";
       if (ctrl.up) {
         this.y -= 2;
         animationName = "up";
