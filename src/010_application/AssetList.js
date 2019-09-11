@@ -18,6 +18,7 @@ phina.namespace(function() {
               image: {
                 "actor4": "assets/textures/actor4.png",
                 "shadow": "assets/textures/shadow.png",
+                "weapons": "assets/textures/weapons.png",
               },
             };
             case "common":

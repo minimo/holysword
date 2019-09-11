@@ -13,6 +13,11 @@ phina.namespace(function() {
         .addChildTo(this);
 
       this.nowAnimation = "down";
+
+      this.weapon = Sprite("weapons", 16, 16)
+        .setFrameIndex(0)
+        .disable()
+        .addChildTo(this);
     },
 
     update: function() {

@@ -3,6 +3,12 @@ phina.namespace(function() {
   phina.define('Actor', {
     superClass: 'DisplayElement',
 
+    // 012
+    // 3*5
+    // 678
+    direction: 0,
+    state: "",
+
     sprite: null,
 
     isAnimation: false,
