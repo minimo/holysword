@@ -14,6 +14,9 @@ phina.namespace(() => {
     result.isWindows = (agent.indexOf('windows') !== -1);
     result.isMac = (agent.indexOf('mac os x') !== -1);
 
+    result.isiPad = agent.indexOf('ipad') > -1 || ua.indexOf('macintosh') > -1 && 'ontouchend' in document;
+    result.isiOS = agent.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1 || ua.indexOf('macintosh') > -1 && 'ontouchend' in document;
+
     return result;
   });
 });
