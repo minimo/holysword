@@ -13,8 +13,11 @@ phina.namespace(function() {
 
     image: null,
 
-    init: function() {
+    init: function(xml) {
         this.superInit();
+        if (xml) {
+          this.loadFromXML(xml);
+        }
     },
 
     _load: function(resolve) {
@@ -22,7 +25,7 @@ phina.namespace(function() {
       this.path = "";
       const last = this.src.lastIndexOf("/");
       if (last > 0) {
-        this.path = this.src.substring(0, last+1);
+        this.path = this.src.substring(0, last + 1);
       }
 
       //終了関数保存
@@ -34,100 +37,90 @@ phina.namespace(function() {
       xml.onreadystatechange = () => {
         if (xml.readyState === 4) {
           if ([200, 201, 0].indexOf(xml.status) !== -1) {
-            var data = xml.responseText;
-            data = (new DOMParser()).parseFromString(data, "text/xml");
+            const data = (new DOMParser()).parseFromString(xml.responseText, "text/xml");
             this.dataType = "xml";
             this.data = data;
-            this._parse(data);
+            this._parse(data)
+              .then(() => this._resolve(this));
           }
         }
       };
       xml.send(null);
     },
 
-    _parse: function(data) {
-      //タイルセット取得
-      this.tilesets = this._parseTilesets(data);
+    loadFromXML: function(xml) {
+      return this._parse(xml);
+    },
 
-      //タイルセット情報補完
-      const defaultAttr = {
-        tilewidth: 32,
-        tileheight: 32,
-        spacing: 0,
-        margin: 0,
-      };
-      this.tilesets.chips = [];
-      for (let i = 0; i < this.tilesets.length; i++) {
+    _parse: function(data) {
+      return new Promise(resolve => {
+        //タイルセット取得
+        this.tileset = this._parseTileset(data);
+
+        //タイルセット情報補完
+        const defaultAttr = {
+          tilewidth: 32,
+          tileheight: 32,
+          firstgid: 1,
+          spacing: 0,
+          margin: 0,
+        };
+        this.tileset.chips = [];
+
         //タイルセット属性情報取得
-        const attr = this._attrToJSON(data.getElementsByTagName('tileset')[i]);
+        const attr = this._attrToJSON(data.getElementsByTagName('tileset')[0]);
         attr.$safe(defaultAttr);
         attr.firstgid--;
-        this.tilesets[i].$extend(attr);
+        this.tileset.$extend(attr);
 
         //マップチップリスト作成
-        const t = this.tilesets[i];
-        this.tilesets[i].mapChip = [];
-        for (let r = attr.firstgid; r < attr.firstgid+attr.tilecount; r++) {
-          var chip = {
+        const t = this.tileset;
+        this.tileset.mapChip = [];
+        for (let r = attr.firstgid; r < attr.firstgid + attr.tilecount; r++) {
+          const chip = {
             image: t.image,
             x: ((r - attr.firstgid) % t.columns) * (t.tilewidth + t.spacing) + t.margin,
             y: Math.floor((r - attr.firstgid) / t.columns) * (t.tileheight + t.spacing) + t.margin,
           }.$safe(attr);
-          this.tilesets.chips[r] = chip;
+          this.tileset.chips[r] = chip;
         }
-      }
 
-      //イメージデータ読み込み
-      this._checkImage();
+        //イメージデータ読み込み
+        this._checkImage()
+          .then(() => resolve());
+      });
     },
 
     //アセットに無いイメージデータを読み込み
     _checkImage: function() {
-      const imageSource = [];
-      const loadImage = [];
-
-      //一覧作成
-      for (let i = 0; i < this.tilesets.length; i++) {
-        const obj = {
-          image: this.tilesets[i].image,
-          transR: this.tilesets[i].transR,
-          transG: this.tilesets[i].transG,
-          transB: this.tilesets[i].transB,
+      return new Promise(resolve => {
+        const imageSource = {
+          image: this.path + this.tileset.image,
+          transR: this.tileset.transR,
+          transG: this.tileset.transG,
+          transB: this.tileset.transB,
         };
-        imageSource.push(obj);
-      }
-
-      //アセットにあるか確認
-      for (let i = 0; i < imageSource.length; i++) {
-        const image = phina.asset.AssetManager.get('image', imageSource[i].image);
-        if (image) {
-          //アセットにある
-        } else {
-          //なかったのでロードリストに追加
-          loadImage.push(imageSource[i]);
+        
+        let loadImage = null;
+        const image = phina.asset.AssetManager.get('image', imageSource.image);
+        if (!image) {
+          loadImage = imageSource;
         }
-      }
 
-      //一括ロード
-      //ロードリスト作成
-      const assets = {
-        image: []
-      };
-      for (let i = 0; i < loadImage.length; i++) {
-        //イメージのパスをマップと同じにする
-        assets.image[imageSource[i].image] = this.path+imageSource[i].image;
-      }
-      if (loadImage.length) {
-        const loader = phina.asset.AssetLoader();
-        loader.load(assets);
-        loader.on('load', e => {
-          //透過色設定反映
-          loadImage.forEach(elm => {
-            const image = phina.asset.AssetManager.get('image', elm.image);
-            if (elm.transR !== undefined) {
-              const r = elm.transR;
-              const g = elm.transG;
-              const b = elm.transB;
+        //ロードリスト作成
+        const assets = { image: [] };
+        assets.image[imageSource.image] = imageSource.image;
+
+        if (loadImage) {
+          const loader = phina.asset.AssetLoader();
+          loader.load(assets);
+          loader.on('load', e => {
+            //透過色設定反映
+            const image = phina.asset.AssetManager.get('image', imageSource.image);
+            if (imageSource.transR !== undefined) {
+              const r = imageSource.transR;
+              const g = imageSource.transG;
+              const b = imageSource.transB;
               image.filter((pixel, index, x, y, bitmap) => {
                 const data = bitmap.data;
                 if (pixel[0] == r && pixel[1] == g && pixel[2] == b) {
@@ -135,38 +128,31 @@ phina.namespace(function() {
                 }
               });
             }
+            resolve();
           });
-          //読み込み終了
-          this._resolve(this);
-        });
-      } else {
-        //読み込み終了
-        this._resolve(this);
-      }
+        } else {
+          resolve();
+        }
+      });
     },
 
     //タイルセットのパース
-    _parseTilesets: function(xml) {
-      const each = Array.prototype.forEach;
-      const data = [];
-      const tilesets = xml.getElementsByTagName('tileset');
-      each.call(tilesets, tileset => {
-        const t = {};
-        const props = this._propertiesToJSON(tileset);
-        if (props.src) {
-          t.image = props.src;
-        } else {
-          t.image = tileset.getElementsByTagName('image')[0].getAttribute('source');
-        }
-        //透過色設定取得
-        t.trans = tileset.getElementsByTagName('image')[0].getAttribute('trans');
-        if (t.trans) {
-          t.transR = parseInt(t.trans.substring(0, 2), 16);
-          t.transG = parseInt(t.trans.substring(2, 4), 16);
-          t.transB = parseInt(t.trans.substring(4, 6), 16);
-        }
-        data.push(t);
-      });
+    _parseTileset: function(xml) {
+      const data = {};
+      const tileset = xml.getElementsByTagName('tileset')[0];
+      const props = this._propertiesToJSON(tileset);
+      if (props.src) {
+        data.image = props.src;
+      } else {
+        data.image = tileset.getElementsByTagName('image')[0].getAttribute('source');
+      }
+      //透過色設定取得
+      data.trans = tileset.getElementsByTagName('image')[0].getAttribute('trans');
+      if (data.trans) {
+        data.transR = parseInt(data.trans.substring(0, 2), 16);
+        data.transG = parseInt(data.trans.substring(2, 4), 16);
+        data.transB = parseInt(data.trans.substring(4, 6), 16);
+      }
       return data;
     },
 
@@ -174,7 +160,7 @@ phina.namespace(function() {
 
   //ローダーに追加
   phina.asset.AssetLoader.assetLoadFunctions.tsx = function(key, path) {
-    var tsx = phina.asset.TileSet();
+    const tsx = phina.asset.TileSet();
     return tsx.load(path);
   };
 
