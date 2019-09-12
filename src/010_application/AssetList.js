@@ -20,6 +20,12 @@ phina.namespace(function() {
                 "shadow": "assets/textures/shadow.png",
                 "weapons": "assets/textures/weapons.png",
               },
+              tmx: {
+                "map1": "assets/map/map1.tmx",
+              },
+              // tsx: {
+              //   "tile_a": "assets/map/tile_a.tsx",
+              // }
             };
             case "common":
             return {
