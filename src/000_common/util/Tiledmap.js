@@ -146,7 +146,13 @@ phina.namespace(function() {
       this.layers = this._parseLayers(data);
 
       //イメージデータ読み込み
-      this._checkImage();
+      this._checkImage()
+        .then(() => {
+          //マップイメージ生成
+          this.image = this._generateImage();
+          //読み込み完了
+          this._resolve(this)
+        });
     },
 
     //タイルセットのパース
@@ -298,76 +304,72 @@ phina.namespace(function() {
 
     //アセットに無いイメージデータを読み込み
     _checkImage: function() {
-      const imageSource = [];
-      const loadImage = [];
+      return new Promise(resolve => {
+        const imageSource = [];
+        const loadImage = [];
 
-      //一覧作成
-      for (let i = 0; i < this.tilesets.length; i++) {
-        const obj = {
-          image: this.tilesets[i].image,
-          transR: this.tilesets[i].transR,
-          transG: this.tilesets[i].transG,
-          transB: this.tilesets[i].transB,
-        };
-        imageSource.push(obj);
-      }
-      for (let i = 0; i < this.layers.length; i++) {
-        if (this.layers[i].image) {
+        //一覧作成
+        for (let i = 0; i < this.tilesets.length; i++) {
           const obj = {
-            image: this.layers[i].image.source
+            image: this.tilesets[i].image,
+            transR: this.tilesets[i].transR,
+            transG: this.tilesets[i].transG,
+            transB: this.tilesets[i].transB,
           };
           imageSource.push(obj);
         }
-      }
-
-      //アセットにあるか確認
-      for (let i = 0; i < imageSource.length; i++) {
-        const image = phina.asset.AssetManager.get('image', imageSource[i].image);
-        if (image) {
-          //アセットにある
-        } else {
-          //なかったのでロードリストに追加
-          loadImage.push(imageSource[i]);
+        for (let i = 0; i < this.layers.length; i++) {
+          if (this.layers[i].image) {
+            const obj = {
+              image: this.layers[i].image.source
+            };
+            imageSource.push(obj);
+          }
         }
-      }
 
-      //一括ロード
-      //ロードリスト作成
-      const assets = { image: [] };
-      for (let i = 0; i < loadImage.length; i++) {
-        //イメージのパスをマップと同じにする
-        assets.image[imageSource[i].image] = this.path+imageSource[i].image;
-      }
-      if (loadImage.length) {
-        const loader = phina.asset.AssetLoader();
-        loader.load(assets);
-        loader.on('load', e => {
-          //透過色設定反映
-          loadImage.forEach(elm => {
-            const image = phina.asset.AssetManager.get('image', elm.image);
-            if (elm.transR !== undefined) {
-              const r = elm.transR;
-              const g = elm.transG;
-              const b = elm.transB;
-              image.filter((pixel, index, x, y, bitmap) => {
-                const data = bitmap.data;
-                if (pixel[0] == r && pixel[1] == g && pixel[2] == b) {
-                    data[index+3] = 0;
-                }
-              });
-            }
+        //アセットにあるか確認
+        for (let i = 0; i < imageSource.length; i++) {
+          const image = phina.asset.AssetManager.get('image', imageSource[i].image);
+          if (image) {
+            //アセットにある
+          } else {
+            //なかったのでロードリストに追加
+            loadImage.push(imageSource[i]);
+          }
+        }
+
+        //一括ロード
+        //ロードリスト作成
+        const assets = { image: [] };
+        for (let i = 0; i < loadImage.length; i++) {
+          //イメージのパスをマップと同じにする
+          assets.image[imageSource[i].image] = this.path+imageSource[i].image;
+        }
+        if (loadImage.length) {
+          const loader = phina.asset.AssetLoader();
+          loader.load(assets);
+          loader.on('load', e => {
+            //透過色設定反映
+            loadImage.forEach(elm => {
+              const image = phina.asset.AssetManager.get('image', elm.image);
+              if (elm.transR !== undefined) {
+                const r = elm.transR;
+                const g = elm.transG;
+                const b = elm.transB;
+                image.filter((pixel, index, x, y, bitmap) => {
+                  const data = bitmap.data;
+                  if (pixel[0] == r && pixel[1] == g && pixel[2] == b) {
+                      data[index+3] = 0;
+                  }
+                });
+              }
+            });
+            resolve();
           });
-          //マップイメージ生成
-          this.image = this._generateImage();
-          //読み込み終了
-          this._resolve(this);
-        });
-      } else {
-        //マップイメージ生成
-        this.image = this._generateImage();
-        //読み込み終了
-        this._resolve(this);
-      }
+        } else {
+          resolve();
+        }
+      });
     },
 
     //マップイメージ作成
