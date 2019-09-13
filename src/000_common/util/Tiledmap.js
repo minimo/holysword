@@ -276,7 +276,6 @@ phina.namespace(function() {
         const obj = {
           isTileset: true,
           image: tileset.source,
-          url: tileset.source,
         };
         imageSource.push(obj);
       });
@@ -285,7 +284,6 @@ phina.namespace(function() {
           const obj = {
             isTileset: false,
             image: layer.image.source,
-            url: layer.image.source,
           };
           imageSource.push(obj);
         }
@@ -293,47 +291,38 @@ phina.namespace(function() {
 
       //アセットにあるか確認
       imageSource.forEach(e => {
-        const image = phina.asset.AssetManager.get('image', e.image);
-        if (image) {
-          //アセットにある
+        if (imageSource.isTileset) {
+          const tsx = phina.asset.AssetManager.get('tsx', e.image);
+          if (!tsx) {
+            //アセットになかったのでロードリストに追加
+            loadImage.push(e);
+          }
         } else {
-          //なかったのでロードリストに追加
-          loadImage.push(e);
+          const image = phina.asset.AssetManager.get('image', e.image);
+          if (!image) {
+            //アセットになかったのでロードリストに追加
+            loadImage.push(e);
+          }
         }
       });
 
       //一括ロード
       //ロードリスト作成
       if (loadImage.length) {
-        const loaders = [];
-        for (let i = 0; i < loadImage.length; i++) {
-          //イメージのパスをマップと同じにする
-          const assets = { image: [] };
-          assets.image[imageSource[i].image] = this.path+imageSource[i].image;
-          loaders.push(new Promise(resolve => {
-            const loader = phina.asset.AssetLoader();
-            loader.load(assets);
-            loader.on('load', e => {
-              //透過色設定反映
-              loadImage.forEach(elm => {
-                const image = phina.asset.AssetManager.get('image', elm.image);
-                if (elm.transR !== undefined) {
-                  const r = elm.transR;
-                  const g = elm.transG;
-                  const b = elm.transB;
-                  image.filter((pixel, index, x, y, bitmap) => {
-                    const data = bitmap.data;
-                    if (pixel[0] == r && pixel[1] == g && pixel[2] == b) {
-                        data[index+3] = 0;
-                    }
-                  });
-                }
-              });
-              resolve();
-            });
-          }));
-        }
-        return Promise.all(loaders);
+        const assets = { image: [], tsx: [] };
+        loadImage.forEach(e => {
+          //アセットのパスをマップと同じにする
+          if (e.isTileset) {
+            assets.tsx[e.image] = e.image;
+          } else {
+            assets.image[e.image] = e.image;
+          }
+        });
+        return new Promise(resolve => {
+          const loader = phina.asset.AssetLoader();
+          loader.load(assets);
+          loader.on('load', e => resolve());
+        });
       } else {
         return Promise.resolve();
       }
