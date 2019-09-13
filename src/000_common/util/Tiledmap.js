@@ -40,7 +40,8 @@ phina.namespace(function() {
             const data = (new DOMParser()).parseFromString(xml.responseText, "text/xml");
             this.dataType = "xml";
             this.data = data;
-            this._parse(data);
+            this._parse(data)
+              .then(() => this._resolve(this));
           }
         }
       };
@@ -105,54 +106,27 @@ phina.namespace(function() {
     },
 
     _parse: function(data) {
-      //タイル属性情報取得
-      const map = data.getElementsByTagName('map')[0];
-      const attr = this._attrToJSON(map);
-      this.$extend(attr);
-      this.properties = this._propertiesToJSON(map);
+      return new Promise(resolve => {
+        //タイル属性情報取得
+        const map = data.getElementsByTagName('map')[0];
+        const attr = this._attrToJSON(map);
+        this.$extend(attr);
+        this.properties = this._propertiesToJSON(map);
 
-      //タイルセット取得
-      this.tilesets = this._parseTilesets(data);
+        //タイルセット取得
+        this.tilesets = this._parseTilesets(data);
 
-      //タイルセット情報補完
-      const defaultAttr = {
-        tilewidth: 32,
-        tileheight: 32,
-        spacing: 0,
-        margin: 0,
-      };
-      this.tilesets.chips = [];
-      for (let i = 0; i < this.tilesets.length; i++) {
-        //タイルセット属性情報取得
-        const attr = this._attrToJSON(data.getElementsByTagName('tileset')[i]);
-        attr.$safe(defaultAttr);
-        attr.firstgid--;
-        this.tilesets[i].$extend(attr);
+        //レイヤー取得
+        this.layers = this._parseLayers(data);
 
-        //マップチップリスト作成
-        const t = this.tilesets[i];
-        this.tilesets[i].mapChip = [];
-        for (let r = attr.firstgid; r < attr.firstgid+attr.tilecount; r++) {
-          const chip = {
-            image: t.image,
-            x: ((r - attr.firstgid) % t.columns) * (t.tilewidth + t.spacing) + t.margin,
-            y: Math.floor((r - attr.firstgid) / t.columns) * (t.tileheight + t.spacing) + t.margin,
-          }.$safe(attr);
-          this.tilesets.chips[r] = chip;
-        }
-      }
-
-      //レイヤー取得
-      this.layers = this._parseLayers(data);
-
-      //イメージデータ読み込み
-      this._checkImage()
-        .then(() => {
-          //マップイメージ生成
-          this.image = this._generateImage();
-          //読み込み完了
-          this._resolve(this)
-        });
+        //イメージデータ読み込み
+        this._checkImage()
+          .then(() => {
+            //マップイメージ生成
+            this.image = this._generateImage();
+            resolve();
+          });
+      })
     },
 
     //タイルセットのパース
@@ -164,23 +138,13 @@ phina.namespace(function() {
         const t = {};
         const attr = this._attrToJSON(tileset);
         if (attr.source) {
+          t.isOldFormat = false;
           t.source = this.path + attr.source;
         } else {
-          const props = this._propertiesToJSON(tileset);
-          if (props.src) {
-            t.image = props.src;
-          } else {
-            t.image = tileset.getElementsByTagName('image')[0].getAttribute('source');
-          }
-          //透過色設定取得
-          t.trans = tileset.getElementsByTagName('image')[0].getAttribute('trans');
-          if (t.trans) {
-            t.transR = parseInt(t.trans.substring(0, 2), 16);
-            t.transG = parseInt(t.trans.substring(2, 4), 16);
-            t.transB = parseInt(t.trans.substring(4, 6), 16);
-          }
+          //旧データ形式
+          t.isOldFormat = true;
+          t.data = tileset;
         }
-
         data.push(t);
       });
       return data;
@@ -304,72 +268,75 @@ phina.namespace(function() {
 
     //アセットに無いイメージデータを読み込み
     _checkImage: function() {
-      return new Promise(resolve => {
-        const imageSource = [];
-        const loadImage = [];
+      const imageSource = [];
+      const loadImage = [];
 
-        //一覧作成
-        for (let i = 0; i < this.tilesets.length; i++) {
+      //一覧作成
+      this.tilesets.forEach(tileset => {
+        const obj = {
+          isTileset: true,
+          image: tileset.source,
+          url: tileset.source,
+        };
+        imageSource.push(obj);
+      });
+      this.layers.forEach(layer => {
+        if (layer.image) {
           const obj = {
-            image: this.tilesets[i].image,
-            transR: this.tilesets[i].transR,
-            transG: this.tilesets[i].transG,
-            transB: this.tilesets[i].transB,
+            isTileset: false,
+            image: layer.image.source,
+            url: layer.image.source,
           };
           imageSource.push(obj);
         }
-        for (let i = 0; i < this.layers.length; i++) {
-          if (this.layers[i].image) {
-            const obj = {
-              image: this.layers[i].image.source
-            };
-            imageSource.push(obj);
-          }
-        }
+      });
 
-        //アセットにあるか確認
-        for (let i = 0; i < imageSource.length; i++) {
-          const image = phina.asset.AssetManager.get('image', imageSource[i].image);
-          if (image) {
-            //アセットにある
-          } else {
-            //なかったのでロードリストに追加
-            loadImage.push(imageSource[i]);
-          }
-        }
-
-        //一括ロード
-        //ロードリスト作成
-        const assets = { image: [] };
-        for (let i = 0; i < loadImage.length; i++) {
-          //イメージのパスをマップと同じにする
-          assets.image[imageSource[i].image] = this.path+imageSource[i].image;
-        }
-        if (loadImage.length) {
-          const loader = phina.asset.AssetLoader();
-          loader.load(assets);
-          loader.on('load', e => {
-            //透過色設定反映
-            loadImage.forEach(elm => {
-              const image = phina.asset.AssetManager.get('image', elm.image);
-              if (elm.transR !== undefined) {
-                const r = elm.transR;
-                const g = elm.transG;
-                const b = elm.transB;
-                image.filter((pixel, index, x, y, bitmap) => {
-                  const data = bitmap.data;
-                  if (pixel[0] == r && pixel[1] == g && pixel[2] == b) {
-                      data[index+3] = 0;
-                  }
-                });
-              }
-            });
-            resolve();
-          });
+      //アセットにあるか確認
+      imageSource.forEach(e => {
+        const image = phina.asset.AssetManager.get('image', e.image);
+        if (image) {
+          //アセットにある
         } else {
-          resolve();
+          //なかったのでロードリストに追加
+          loadImage.push(e);
         }
       });
+
+      //一括ロード
+      //ロードリスト作成
+      if (loadImage.length) {
+        const loaders = [];
+        for (let i = 0; i < loadImage.length; i++) {
+          //イメージのパスをマップと同じにする
+          const assets = { image: [] };
+          assets.image[imageSource[i].image] = this.path+imageSource[i].image;
+          loaders.push(new Promise(resolve => {
+            const loader = phina.asset.AssetLoader();
+            loader.load(assets);
+            loader.on('load', e => {
+              //透過色設定反映
+              loadImage.forEach(elm => {
+                const image = phina.asset.AssetManager.get('image', elm.image);
+                if (elm.transR !== undefined) {
+                  const r = elm.transR;
+                  const g = elm.transG;
+                  const b = elm.transB;
+                  image.filter((pixel, index, x, y, bitmap) => {
+                    const data = bitmap.data;
+                    if (pixel[0] == r && pixel[1] == g && pixel[2] == b) {
+                        data[index+3] = 0;
+                    }
+                  });
+                }
+              });
+              resolve();
+            });
+          }));
+        }
+        return Promise.all(loaders);
+      } else {
+        return Promise.resolve();
+      }
     },
 
     //マップイメージ作成
