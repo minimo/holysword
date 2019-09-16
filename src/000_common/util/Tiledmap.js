@@ -321,7 +321,12 @@ phina.namespace(function() {
         return new Promise(resolve => {
           const loader = phina.asset.AssetLoader();
           loader.load(assets);
-          loader.on('load', e => resolve());
+          loader.on('load', () => {
+            this.tilesets.forEach(e => {
+              e.tsx = phina.asset.AssetManager.get('image', e.image);
+            });
+            resolve();
+          });
         });
       } else {
         return Promise.resolve();
