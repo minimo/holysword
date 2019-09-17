@@ -74,7 +74,7 @@ phina.namespace(function() {
       const layer = [];
 
       dataList.each(elm => {
-        const num = parseInt(elm, 10) - 1;
+        const num = parseInt(elm, 10);
         layer.push(num);
       });
 
@@ -94,7 +94,7 @@ phina.namespace(function() {
 
       for (let i = 0, len = dataList.length / 4; i < len; ++i) {
         const n = dataList[i*4];
-        rst[i] = parseInt(n, 10) - 1;
+        rst[i] = parseInt(n, 10);
       }
 
       return rst;

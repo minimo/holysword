@@ -115,6 +115,7 @@ phina.namespace(function() {
 
         //タイルセット取得
         this.tilesets = this._parseTilesets(data);
+        this.tilesets.sort((a, b) => a.firstgid - b.firstgid);
 
         //レイヤー取得
         this.layers = this._parseLayers(data);
@@ -145,6 +146,7 @@ phina.namespace(function() {
           t.isOldFormat = true;
           t.data = tileset;
         }
+        t.firstgid = attr.firstgid;
         data.push(t);
       });
       return data;
@@ -180,6 +182,7 @@ phina.namespace(function() {
               } else if (encoding == "base64") {
                   l.data = this._parseBase64(d.textContent);
               }
+              l.data.length.times(i => l.data[i]--);
 
               const attr = this._attrToJSON(layer);
               l.$extend(attr);
@@ -291,7 +294,7 @@ phina.namespace(function() {
 
       //アセットにあるか確認
       imageSource.forEach(e => {
-        if (imageSource.isTileset) {
+        if (e.isTileset) {
           const tsx = phina.asset.AssetManager.get('tsx', e.image);
           if (!tsx) {
             //アセットになかったのでロードリストに追加
@@ -323,7 +326,7 @@ phina.namespace(function() {
           loader.load(assets);
           loader.on('load', () => {
             this.tilesets.forEach(e => {
-              e.tsx = phina.asset.AssetManager.get('image', e.image);
+              e.tsx = phina.asset.AssetManager.get('tsx', e.source);
             });
             resolve();
           });
@@ -354,7 +357,7 @@ phina.namespace(function() {
             const width = layer.width;
             const height = layer.height;
             const opacity = layer.opacity || 1.0;
-            const count = 0;
+            let count = 0;
             for (let y = 0; y < height; y++) {
               for (let x = 0; x < width; x++) {
                 const index = mapdata[count];
@@ -395,8 +398,21 @@ phina.namespace(function() {
 
     //キャンバスの指定した座標にマップチップのイメージをコピーする
     _setMapChip: function(canvas, index, x, y, opacity) {
+      //対象タイルセットの判別
+      let tileset;
+      for (let i = 0; i < this.tilesets.length; i++) {
+        const tsx1 = this.tilesets[i];
+        const tsx2 = this.tilesets[i + 1];
+        if (!tsx2) {
+          tileset = tsx1;
+          i = this.tilesets.length;
+        } else if (tsx1.firstgid < index && index < tsx2.firstgid) {
+          tileset = tsx2;
+          i = this.tilesets.length;
+        }
+      }
       //タイルセットからマップチップを取得
-      const chip = this.tilesets.chips[index];
+      const chip = tileset.tsx.chips[index];
       const image = phina.asset.AssetManager.get('image', chip.image);
       canvas.context.drawImage(
         image.domElement,
