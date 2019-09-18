@@ -74,7 +74,7 @@ phina.namespace(function() {
         this.chips = [];
 
         //ソース画像設定取得
-        this.image = tileset.getElementsByTagName('image')[0].getAttribute('source');
+        this.imageName = tileset.getElementsByTagName('image')[0].getAttribute('source');
   
         //透過色設定取得
         const trans = tileset.getElementsByTagName('image')[0].getAttribute('trans');
@@ -87,7 +87,7 @@ phina.namespace(function() {
         //マップチップリスト作成
         for (let r = 0; r < this.tilecount; r++) {
           const chip = {
-            image: this.image,
+            image: this.imageName,
             x: (r  % this.columns) * (this.tilewidth + this.spacing) + this.margin,
             y: Math.floor(r / this.columns) * (this.tileheight + this.spacing) + this.margin,
           };
@@ -104,7 +104,8 @@ phina.namespace(function() {
     _checkImage: function() {
       return new Promise(resolve => {
         const imageSource = {
-          image: this.path + this.image,
+          imageName: this.imageName,
+          imageUrl: this.path + this.imageName,
           transR: this.transR,
           transG: this.transG,
           transB: this.transB,
@@ -112,25 +113,27 @@ phina.namespace(function() {
         
         let loadImage = null;
         const image = phina.asset.AssetManager.get('image', imageSource.image);
-        if (!image) {
+        if (image) {
+          this.image = image;
+        } else {
           loadImage = imageSource;
         }
 
         //ロードリスト作成
         const assets = { image: [] };
-        assets.image[imageSource.image] = imageSource.image;
+        assets.image[imageSource.imageName] = imageSource.imageUrl;
 
         if (loadImage) {
           const loader = phina.asset.AssetLoader();
           loader.load(assets);
           loader.on('load', e => {
             //透過色設定反映
-            const image = phina.asset.AssetManager.get('image', imageSource.image);
+            this.image = phina.asset.AssetManager.get('image', imageSource.imageUrl);
             if (imageSource.transR !== undefined) {
               const r = imageSource.transR;
               const g = imageSource.transG;
               const b = imageSource.transB;
-              image.filter((pixel, index, x, y, bitmap) => {
+              this.image.filter((pixel, index, x, y, bitmap) => {
                 const data = bitmap.data;
                 if (pixel[0] == r && pixel[1] == g && pixel[2] == b) {
                     data[index+3] = 0;

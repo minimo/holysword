@@ -3,7 +3,9 @@
  *  2016/9/10
  *  @auther minimo  
  *  This Program is MIT license.
- *
+ * 
+ *  2019/9/18
+ *  version 2.0
  */
 
 phina.namespace(function() {
@@ -142,7 +144,7 @@ phina.namespace(function() {
           t.isOldFormat = false;
           t.source = this.path + attr.source;
         } else {
-          //旧データ形式
+          //旧データ形式（未対応）
           t.isOldFormat = true;
           t.data = tileset;
         }
@@ -182,7 +184,6 @@ phina.namespace(function() {
               } else if (encoding == "base64") {
                   l.data = this._parseBase64(d.textContent);
               }
-              l.data.length.times(i => l.data[i]--);
 
               const attr = this._attrToJSON(layer);
               l.$extend(attr);
@@ -361,7 +362,7 @@ phina.namespace(function() {
             for (let y = 0; y < height; y++) {
               for (let x = 0; x < width; x++) {
                 const index = mapdata[count];
-                if (index !== -1) {
+                if (index !== 0) {
                   //マップチップを配置
                   this._setMapChip(canvas, index, x * this.tilewidth, y * this.tileheight, opacity);
                 }
@@ -406,13 +407,13 @@ phina.namespace(function() {
         if (!tsx2) {
           tileset = tsx1;
           i = this.tilesets.length;
-        } else if (tsx1.firstgid < index && index < tsx2.firstgid) {
-          tileset = tsx2;
+        } else if (tsx1.firstgid <= index && index < tsx2.firstgid) {
+          tileset = tsx1;
           i = this.tilesets.length;
         }
       }
       //タイルセットからマップチップを取得
-      const chip = tileset.tsx.chips[index];
+      const chip = tileset.tsx.chips[index - tileset.firstgid];
       const image = phina.asset.AssetManager.get('image', chip.image);
       canvas.context.drawImage(
         image.domElement,
