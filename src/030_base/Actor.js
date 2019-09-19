@@ -51,10 +51,15 @@ phina.namespace(function() {
       this.time = 0;
     },
 
-    setShadow: function() {
+    setShadow: function(options) {
       if (this.shadow) return this;
+      options = ({} || options).$safe({
+        y: 16,
+        scale: 0.8,
+      });
       this.shadow = Sprite("shadow")
-        .setPosition(0, 32)
+        .setPosition(0, options.y)
+        .setScale(options.scale)
         .addChildTo(this);
       this.shadow.alpha = 0.5;
 

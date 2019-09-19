@@ -14,7 +14,8 @@ phina.namespace(function() {
         .addChildTo(this);
 
       const tmx = phina.asset.AssetManager.get('tmx', "map1");
-      Sprite(tmx.getImage()).addChildTo(this.mapBase);
+      const image = tmx.getImage();
+      Sprite(image).addChildTo(this.mapBase);
 
       this.player = Player().addChildTo(this.mapBase);
     },
