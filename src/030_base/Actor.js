@@ -3,9 +3,7 @@ phina.namespace(function() {
   phina.define('Actor', {
     superClass: 'DisplayElement',
 
-    // 012
-    // 3*5
-    // 678
+    //0を上として、時計回りに45度づつ
     direction: 0,
     state: "",
 

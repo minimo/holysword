@@ -10,13 +10,10 @@ phina.namespace(function() {
 
     setup: function() {
       this.mapBase = DisplayElement()
-        .setPosition(SCREEN_WIDTH_HALF, SCREEN_HEIGHT_HALF)
+        .setPosition(0, 0)
         .addChildTo(this);
 
-      const tmx = phina.asset.AssetManager.get('tmx', "map1");
-      const image = tmx.getImage();
-      Sprite(image).addChildTo(this.mapBase);
-
+      this.mapData = WorldMap("map1").addChildTo(this.mapBase);
       this.player = Player().addChildTo(this.mapBase);
     },
 

@@ -58,6 +58,8 @@ phina.namespace(function() {
 
       if (ctrl.up || ctrl.down || ctrl.left || ctrl.right || this.isJump || this.isAttack) this.isAnimation = true;
       this.setAnimation(animationName);
+
+      this.checkCollision();
     },
 
     setupAnimation: function() {
@@ -84,6 +86,10 @@ phina.namespace(function() {
       this.frame["stun"] = [ 18, 19, 20];
       this.index = -1;
       return this;
+    },
+
+    checkCollision: function() {
+
     },
 
   });

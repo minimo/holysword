@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.1.4" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="32" tileheight="32" infinite="0" nextobjectid="1">
+<map version="1.0" tiledversion="1.1.4" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="32" tileheight="32" infinite="0" nextobjectid="4">
  <tileset firstgid="1" source="tile_b.tsx"/>
  <tileset firstgid="193" source="tile_a.tsx"/>
- <layer name="タイル・レイヤー1" width="20" height="20">
+ <layer name="map" width="20" height="20">
   <data encoding="csv">
-0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,211,212,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,211,212,
 1,1,209,210,1,1,1,1,1,1,1,1,1,1,1,1,1,1,227,228,
 1,1,225,226,209,210,1,1,1,1,1,1,1,1,1,1,1,1,243,244,
 1,1,241,242,225,226,1,1,1,1,1,1,1,1,1,1,1,1,259,260,
@@ -26,4 +26,8 @@
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 </data>
  </layer>
+ <objectgroup name="collision">
+  <object id="1" x="63.9809" y="96.1476" width="64.6177" height="63.6169"/>
+  <object id="2" x="129.056" y="127.404" width="62.7971" height="64.2982"/>
+ </objectgroup>
 </map>
