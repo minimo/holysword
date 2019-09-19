@@ -413,14 +413,15 @@ phina.namespace(function() {
         }
       }
       //タイルセットからマップチップを取得
-      const chip = tileset.tsx.chips[index - tileset.firstgid];
+      const tsx = tileset.tsx;
+      const chip = tsx.chips[index - tileset.firstgid];
       const image = phina.asset.AssetManager.get('image', chip.image);
       canvas.context.drawImage(
         image.domElement,
-        chip.x + chip.margin, chip.y + chip.margin,
-        chip.tilewidth, chip.tileheight,
+        chip.x + tsx.margin, chip.y + tsx.margin,
+        tsx.tilewidth, tsx.tileheight,
         x, y,
-        chip.tilewidth, chip.tileheight);
+        tsx.tilewidth, tsx.tileheight);
     },
 
   });

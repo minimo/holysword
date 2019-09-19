@@ -95,13 +95,13 @@ phina.namespace(function() {
         }
 
         //イメージデータ読み込み
-        this._checkImage()
+        this._loadImage()
           .then(() => resolve());
       });
     },
 
     //アセットに無いイメージデータを読み込み
-    _checkImage: function() {
+    _loadImage: function() {
       return new Promise(resolve => {
         const imageSource = {
           imageName: this.imageName,
