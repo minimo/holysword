@@ -17,10 +17,12 @@ phina.namespace(function() {
     isJump: false,
     isAttack: false,
 
+    floorNumber: 0,
+
     time: 0,
 
     init: function(options) {
-      this.superInit();
+      this.superInit(options);
 
       this.setupAnimation();
 

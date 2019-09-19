@@ -3,8 +3,8 @@ phina.namespace(function() {
   phina.define('Player', {
     superClass: 'Actor',
 
-    init: function(options) {
-      this.superInit();
+    init: function() {
+      this.superInit({ width: 32, height: 32 });
 
       this.setShadow();
 
@@ -25,18 +25,20 @@ phina.namespace(function() {
       const app = phina_app;
       const ctrl = app.controller;
       let animationName = "";
+      let vx = 0;
+      let vy = 0;
       if (ctrl.up) {
-        this.y -= 2;
+        vy = -2;
         animationName = "up";
       } else if (ctrl.down) {
-        this.y += 2;
+        vy = 2;
         animationName = "down";
       }
       if (ctrl.left) {
-        this.x -= 2;
+        vx = -2;
         animationName += "left";
       } else if (ctrl.right) {
-        this.x += 2;
+        vx = 2;
         animationName += "right";
       }
 
@@ -59,7 +61,12 @@ phina.namespace(function() {
       if (ctrl.up || ctrl.down || ctrl.left || ctrl.right || this.isJump || this.isAttack) this.isAnimation = true;
       this.setAnimation(animationName);
 
-      this.checkCollision();
+      const x = this.x + vx;
+      const y = this.y + vy;
+      if (!this.checkCollision(x, y) && this.checkFloor(x, y)) {
+        this.x += vx;
+        this.y += vy;
+      }
     },
 
     setupAnimation: function() {
@@ -88,8 +95,46 @@ phina.namespace(function() {
       return this;
     },
 
-    checkCollision: function() {
+    setCollisionData: function(collisionData) {
+      this.collisionData = collisionData;
+      return this;
+    },
 
+    setFloorData: function(floorData) {
+      this.floorData = floorData;
+      return this;
+    },
+
+    checkCollision: function(x, y) {
+      const ox = this.x;
+      const oy = this.y;
+      this.x = x;
+      this.y = y;
+      this._calcWorldMatrix();
+      let result = false;
+      this.collisionData.forEach(e => {
+        if (this.hitTestElement(e)) result = true;
+      });
+      this.x = ox;
+      this.y = oy;
+      this._calcWorldMatrix();
+      return result;
+    },
+
+    checkFloor: function(x, y) {
+      const ox = this.x;
+      const oy = this.y;
+      this.x = x;
+      this.y = y;
+      this._calcWorldMatrix();
+      let result = false;
+      this.floorData.forEach(e => {
+        if (this.hitTestElement(e) && e.properties.floorNumber == this.floorNumber) result = true;
+      });
+      this.x = ox;
+      this.y = oy;
+      this._calcWorldMatrix();
+      return result;
     },
 
   });

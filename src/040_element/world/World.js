@@ -14,7 +14,11 @@ phina.namespace(function() {
         .addChildTo(this);
 
       this.mapData = WorldMap("map1").addChildTo(this.mapBase);
-      this.player = Player().addChildTo(this.mapBase);
+
+      this.player = Player()
+        .setCollisionData(this.mapData.getCollisionData())
+        .setFloorData(this.mapData.getFloorData())
+        .addChildTo(this.mapBase);
     },
 
     update: function() {

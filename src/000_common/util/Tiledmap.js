@@ -82,8 +82,8 @@ phina.namespace(function() {
             //レイヤー情報をクローンする
             const obj = this._cloneObjectLayer(this.layers[i]);
             if (groupName !== null) return obj;
+            ls.push(obj);
           }
-          ls.push(obj);
         }
       }
       return ls;

@@ -5,27 +5,41 @@ phina.namespace(function() {
 
     init: function(mapName) {
       this.superInit();
-      this.setup();
+      this.setup(mapName);
     },
 
-    setup: function() {
+    setup: function(mapName) {
       this.data = phina.asset.AssetManager.get('tmx', mapName);
       Sprite(this.data.getImage())
         .setOrigin(0, 0)
         .addChildTo(this);
 
-      this.collision = [];
-      const layerData = this.data.getObjectGroup("collision");
-      layerData.objectes.forEach(e => {
-        const p = e.properties;
+      this.collision = this.layerToArray("collision");
+      this.floorData = this.layerToArray("floor");
+    },
+
+    getCollisionData: function() {
+      return this.collision;
+    },
+
+    getFloorData: function() {
+      return this.floorData;
+    },
+
+    layerToArray: function(layerName) {
+      const result = [];
+      const layerData = this.data.getObjectGroup(layerName);
+      layerData.objects.forEach(e => {
         const element = DisplayElement({
-          width: p.width,
-          height: p.height,
-          x: p.x,
-          y: p.y,
-        }).setOrigin(0, 0);
-        this.collision.push(element);
+          width: e.width,
+          height: e.height,
+          x: e.x + e.width / 2,
+          y: e.y + e.height / 2,
+        }).addChildTo(this);
+        element.properties = e.properties;
+        result.push(element);
       });
+      return result;
     },
 
   });
