@@ -13,6 +13,9 @@ phina.namespace(function() {
         .setPosition(SCREEN_WIDTH_HALF, SCREEN_HEIGHT_HALF)
         .addChildTo(this);
 
+      const tmx = phina.asset.AssetManager.get('tmx', "map1");
+      Sprite(tmx.getImage()).addChildTo(this.mapBase);
+
       this.player = Player().addChildTo(this.mapBase);
     },
 
