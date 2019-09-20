@@ -18,6 +18,10 @@ phina.namespace(function() {
         .setFrameIndex(0)
         .disable()
         .addChildTo(this);
+
+      this.collision = DisplayElement({ width: 32, height: 8 })
+        .setPosition(0, 16)
+        .addChildTo(this)
     },
 
     update: function() {
@@ -111,13 +115,15 @@ phina.namespace(function() {
       this.x = x;
       this.y = y;
       this._calcWorldMatrix();
+      this.collision._calcWorldMatrix();
       let result = false;
       this.collisionData.forEach(e => {
-        if (this.hitTestElement(e)) result = true;
+        if (this.collision.hitTestElement(e)) result = true;
       });
       this.x = ox;
       this.y = oy;
       this._calcWorldMatrix();
+      this.collision._calcWorldMatrix();
       return result;
     },
 
@@ -127,6 +133,7 @@ phina.namespace(function() {
       this.x = x;
       this.y = y;
       this._calcWorldMatrix();
+      this.collision._calcWorldMatrix();
       let result = false;
       this.floorData.forEach(e => {
         if (this.hitTestElement(e) && e.properties.floorNumber == this.floorNumber) result = true;
@@ -134,6 +141,7 @@ phina.namespace(function() {
       this.x = ox;
       this.y = oy;
       this._calcWorldMatrix();
+      this.collision._calcWorldMatrix();
       return result;
     },
 
