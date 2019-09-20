@@ -46,16 +46,6 @@ phina.namespace(function() {
         animationName += "right";
       }
 
-      if (ctrl.jump) {
-        if (!this.isJump) {
-          this.isJump = true;
-          this.sprite.tweener.clear()
-            .by({ y: -32 }, 250, "easeOutSine")
-            .by({ y: 32 }, 250, "easeInSine")
-            .call(() => this.isJump = false)
-          }
-      }
-
       if (ctrl.attack) {
         if (!this.isAttack) {
           this.isAttack = true;
@@ -69,7 +59,7 @@ phina.namespace(function() {
       const y = this.y + vy;
       const res1 = this.checkCollision(x, y);
       const res2 = this.checkFloor(x, y);
-      if (!res1.isCollision && res2.isCollision) {
+      if (!res1.isCollision && res2.isCollision || res2.isBridge) {
         this.x += vx;
         this.y += vy;
         if (res1.isCover || res2.isCover) {
@@ -77,7 +67,23 @@ phina.namespace(function() {
         } else {
           this.alpha = 1.0;
         }
+
+        if (res2.isBridge) {
+          this.alpha = 1.0;
+          this.floorNumber = res2.floorNumber;
+        }
       }
+
+      if (ctrl.jump && !res2.isBridge) {
+        if (!this.isJump) {
+          this.isJump = true;
+          this.sprite.tweener.clear()
+            .by({ y: -32 }, 250, "easeOutSine")
+            .by({ y: 32 }, 250, "easeInSine")
+            .call(() => this.isJump = false)
+          }
+      }
+
     },
 
     setupAnimation: function() {
@@ -155,15 +161,23 @@ phina.namespace(function() {
       let result = {
         isCollision: false,
         isCover: false,
+        isBridge: false,
+        floorNumber: 0,
       };
       if (this.floorNumber == 0) result.isCollision = true;
       this.floorData.forEach(e => {
         if (this.collision.hitTestElement(e)) {
-          if (e.floorNumber[this.floorNumber]) {
+          if (e.bridge) {
             result.isCollision = true;
+            result.isBridge = true;
+          } else if (e.floorNumber[this.floorNumber]) {
+              result.isCollision = true;
           } else {
             for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
-              if (e.floorNumber[i]) result.isCover = true;
+              if (e.floorNumber[i]) {
+                result.isCover = true;
+                result.floorNumber = i;
+              }
             }
           }
         }
