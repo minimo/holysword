@@ -19,7 +19,7 @@ phina.namespace(function() {
         .disable()
         .addChildTo(this);
 
-      this.collision = DisplayElement({ width: 32, height: 8 })
+      this.collision = DisplayElement({ width: 16, height: 8 })
         .setPosition(0, 16)
         .addChildTo(this)
     },
@@ -59,8 +59,8 @@ phina.namespace(function() {
       const y = this.y + vy;
       const res1 = this.checkCollision(x, y);
       const res2 = this.checkFloor(x, y);
-      if (!res1.isCollision && res2.isCollision || res2.isBridge) {
-        this.x += vx;
+      if (!res1.isCollision && res2.isCollision && res2.isOnFloor || res2.isBridge) {
+        if (!res2.isBridge)this.x += vx;
         this.y += vy;
         if (res1.isCover || res2.isCover) {
           this.alpha = 0.5;
@@ -163,8 +163,12 @@ phina.namespace(function() {
         isCover: false,
         isBridge: false,
         floorNumber: 0,
+        isOnFloor: false,
       };
-      if (this.floorNumber == 0) result.isCollision = true;
+      if (this.floorNumber == 0) {
+        result.isCollision = true;
+        result.isOnFloor = true;
+      }
       this.floorData.forEach(e => {
         if (this.collision.hitTestElement(e)) {
           if (e.bridge) {
@@ -179,6 +183,9 @@ phina.namespace(function() {
                 result.floorNumber = i;
               }
             }
+          }
+          if (e.includeElement(this.collision)) {
+            result.isOnFloor = true;
           }
         }
       });

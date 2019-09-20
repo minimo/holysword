@@ -35,6 +35,13 @@ phina.namespace(() => {
       (rect0.top < rect1.bottom) && (rect0.bottom > rect1.top);
   });
 
+  phina.app.Object2D.prototype.$method("includeElement", function(elm) {
+    const rect0 = this.calcGlobalRect();
+    const rect1 = elm.calcGlobalRect();
+    return (rect0.left <= rect1.left) && (rect0.right >= rect1.right) &&
+      (rect0.top <= rect1.top) && (rect0.bottom >= rect1.bottom);
+  });
+
   phina.app.Object2D.prototype.$method("calcGlobalRect", function() {
     const left = this._worldMatrix.m02 - this.originX * this.width;
     const top = this._worldMatrix.m12 - this.originY * this.height;
