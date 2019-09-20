@@ -265,6 +265,9 @@ phina.namespace(function() {
               data.push(l);
             }
             break;
+          //グループ
+          case "group":
+            break;
         }
       });
       return data;
@@ -315,11 +318,11 @@ phina.namespace(function() {
       if (loadImage.length) {
         const assets = { image: [], tsx: [] };
         loadImage.forEach(e => {
-          //アセットのパスをマップと同じにする
           if (e.isTileset) {
             assets.tsx[e.image] = e.image;
           } else {
-            assets.image[e.image] = e.image;
+            //アセットのパスをマップと同じにする
+            assets.image[e.image] = this.path + e.image;
           }
         });
         return new Promise(resolve => {

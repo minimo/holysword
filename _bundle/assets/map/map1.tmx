@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.4" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="12">
+<map version="1.0" tiledversion="1.1.4" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="32" tileheight="32" infinite="0" nextobjectid="15">
  <tileset firstgid="1" source="tile_b.tsx"/>
  <tileset firstgid="193" source="tile_a.tsx"/>
- <layer id="1" name="map" width="20" height="20">
+ <layer name="map" width="20" height="20">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,211,212,
 1,1,209,210,1,1,1,1,1,1,1,1,1,1,1,1,1,1,227,228,
@@ -26,7 +26,7 @@
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 </data>
  </layer>
- <objectgroup id="2" name="collision">
+ <objectgroup name="collision">
   <object id="1" x="64" y="64" width="64" height="96">
    <properties>
     <property name="floorNumber" value="0,1"/>
@@ -48,21 +48,20 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup color="#00ff80" id="3" name="floor" visible="0">
-  <object id="4" x="0" y="0" width="640" height="640">
-   <properties>
-    <property name="floorNumber" type="int" value="0"/>
-   </properties>
-  </object>
+ <objectgroup color="#00ff80" name="floor">
   <object id="8" x="64" y="32" width="64" height="64">
    <properties>
-    <property name="floorNumber" type="int" value="1"/>
+    <property name="floorNumber" value="1"/>
    </properties>
   </object>
-  <object id="9" x="128" y="64" width="64" height="64">
+  <object id="9" x="128" y="64" width="192" height="64">
    <properties>
-    <property name="floorNumber" type="int" value="1"/>
+    <property name="floorNumber" value="1"/>
    </properties>
   </object>
  </objectgroup>
+ <group name="Group 2">
+  <objectgroup name="floor2"/>
+  <objectgroup name="floor1"/>
+ </group>
 </map>

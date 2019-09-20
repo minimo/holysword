@@ -67,9 +67,16 @@ phina.namespace(function() {
 
       const x = this.x + vx;
       const y = this.y + vy;
-      if (!this.checkCollision(x, y) && this.checkFloor(x, y)) {
+      const res1 = this.checkCollision(x, y);
+      const res2 = this.checkFloor(x, y);
+      if (!res1.isCollision && res2.isCollision) {
         this.x += vx;
         this.y += vy;
+        if (res1.isCover || res2.isCover) {
+          this.alpha = 0.5;
+        } else {
+          this.alpha = 1.0;
+        }
       }
     },
 
@@ -116,9 +123,20 @@ phina.namespace(function() {
       this.y = y;
       this._calcWorldMatrix();
       this.collision._calcWorldMatrix();
-      let result = false;
+      let result = {
+        isCollision: false,
+        isCover: false,
+      };
       this.collisionData.forEach(e => {
-        if (this.collision.hitTestElement(e)) result = true;
+        if (this.collision.hitTestElement(e)) {
+          if (e.floorNumber[this.floorNumber]) {
+            result.isCollision = true;
+          } else {
+            for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
+              if (e.floorNumber[i]) result.isCover = true;
+            }
+          }
+        }
       });
       this.x = ox;
       this.y = oy;
@@ -134,9 +152,21 @@ phina.namespace(function() {
       this.y = y;
       this._calcWorldMatrix();
       this.collision._calcWorldMatrix();
-      let result = false;
+      let result = {
+        isCollision: false,
+        isCover: false,
+      };
+      if (this.floorNumber == 0) result.isCollision = true;
       this.floorData.forEach(e => {
-        if (this.hitTestElement(e) && e.properties.floorNumber == this.floorNumber) result = true;
+        if (this.collision.hitTestElement(e)) {
+          if (e.floorNumber[this.floorNumber]) {
+            result.isCollision = true;
+          } else {
+            for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
+              if (e.floorNumber[i]) result.isCover = true;
+            }
+          }
+        }
       });
       this.x = ox;
       this.y = oy;

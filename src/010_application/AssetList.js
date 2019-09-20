@@ -21,7 +21,7 @@ phina.namespace(function() {
                 "weapons": "assets/textures/weapons.png",
               },
               tmx: {
-                "map1": "assets/map/map1.tmx",
+                "map1": "assets/map/map2.tmx",
               },
               // tsx: {
               //   "tile_a": "assets/map/tile_a.tsx",
