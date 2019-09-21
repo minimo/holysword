@@ -5,7 +5,7 @@ phina.namespace(function() {
 
     //0を上として、時計回りに45度づつ
     direction: 0,
-    state: "",
+    state: null,
 
     sprite: null,
 
@@ -16,6 +16,7 @@ phina.namespace(function() {
 
     isJump: false,
     isAttack: false,
+    beforeFrame: null,
 
     floorNumber: 0,
 
@@ -25,6 +26,11 @@ phina.namespace(function() {
       this.superInit(options);
 
       this.setupAnimation();
+
+      this.beforeFrame = {
+        collision: {},
+        floor: {},
+      };
 
       this.on('enterframe', () => {
         //アニメーション

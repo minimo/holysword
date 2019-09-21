@@ -57,20 +57,27 @@ phina.namespace(function() {
 
       const x = this.x + vx;
       const y = this.y + vy;
+
+      //マップ当たり判定
       const res1 = this.checkCollision(x, y);
       const res2 = this.checkFloor(x, y);
+      if (this.beforeFrame.collision.isCover && !this.beforeFrame.floor.isBridge) res2.isBridge = false;
       if (!res1.isCollision && res2.isCollision && res2.isOnFloor || res2.isBridge) {
-        if (!res2.isBridge)this.x += vx;
+        this.x += vx;
         this.y += vy;
+
+        //裏に回っているかの判定
         if (res1.isCover || res2.isCover) {
           this.alpha = 0.5;
         } else {
           this.alpha = 1.0;
         }
 
+        //他フロアへ行く為のブリッジにいるか判定
         if (res2.isBridge) {
           this.alpha = 1.0;
           this.floorNumber = res2.floorNumber;
+          this.x -= vx; //ブリッジは横移動出来ない
         }
       }
 
@@ -84,6 +91,9 @@ phina.namespace(function() {
           }
       }
 
+      this.beforeFrame.collision = res1;
+      this.beforeFrame.floor = res2;
+      this.beforeFrame.floorNumber = this.floorNumber;
     },
 
     setupAnimation: function() {
