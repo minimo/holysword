@@ -7,6 +7,9 @@ phina.namespace(function() {
     direction: 0,
     state: null,
 
+    vx: 0,
+    vy: 0,
+
     sprite: null,
 
     isAnimation: false,
@@ -31,6 +34,10 @@ phina.namespace(function() {
         collision: {},
         floor: {},
       };
+
+      this.collision = DisplayElement({ width: 16, height: 8 })
+        .setPosition(0, 16)
+        .addChildTo(this)
 
       this.on('enterframe', () => {
         //アニメーション

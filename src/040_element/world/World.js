@@ -13,12 +13,12 @@ phina.namespace(function() {
         .setPosition(0, 0)
         .addChildTo(this);
 
-      this.mapData = WorldMap("map1").addChildTo(this.mapBase);
+      this.map = WorldMap("map1").addChildTo(this.mapBase);
 
       this.player = Player()
-        .setCollisionData(this.mapData.getCollisionData())
-        .setFloorData(this.mapData.getFloorData())
-        .addChildTo(this.mapBase);
+        .setCollisionData(this.map.getCollisionData())
+        .setFloorData(this.map.getFloorData())
+        .addChildTo(this.map);
     },
 
     update: function() {

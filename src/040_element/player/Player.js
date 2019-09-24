@@ -18,31 +18,28 @@ phina.namespace(function() {
         .setFrameIndex(0)
         .disable()
         .addChildTo(this);
-
-      this.collision = DisplayElement({ width: 16, height: 8 })
-        .setPosition(0, 16)
-        .addChildTo(this)
     },
 
     update: function() {
+      this.vx = 0;
+      this.vy = 0;
       this.isAnimation = false;
+
       const app = phina_app;
       const ctrl = app.controller;
       let animationName = "";
-      let vx = 0;
-      let vy = 0;
       if (ctrl.up) {
-        vy = -2;
+        this.vy = -2;
         animationName = "up";
       } else if (ctrl.down) {
-        vy = 2;
+        this.vy = 2;
         animationName = "down";
       }
       if (ctrl.left) {
-        vx = -2;
+        this.vx = -2;
         animationName += "left";
       } else if (ctrl.right) {
-        vx = 2;
+        this.vx = 2;
         animationName += "right";
       }
 
@@ -55,16 +52,16 @@ phina.namespace(function() {
       if (ctrl.up || ctrl.down || ctrl.left || ctrl.right || this.isJump || this.isAttack) this.isAnimation = true;
       this.setAnimation(animationName);
 
-      const x = this.x + vx;
-      const y = this.y + vy;
+      const x = this.x + this.vx;
+      const y = this.y + this.vy;
 
       //マップ当たり判定
       const res1 = this.checkCollision(x, y);
       const res2 = this.checkFloor(x, y);
       if (this.beforeFrame.collision.isCover && !this.beforeFrame.floor.isBridge) res2.isBridge = false;
       if (!res1.isCollision && res2.isCollision && res2.isOnFloor || res2.isBridge) {
-        this.x += vx;
-        this.y += vy;
+        this.x += this.vx;
+        this.y += this.vy;
 
         //裏に回っているかの判定
         if (res1.isCover || res2.isCover) {
@@ -77,7 +74,7 @@ phina.namespace(function() {
         if (res2.isBridge) {
           this.alpha = 1.0;
           this.floorNumber = res2.floorNumber;
-          this.x -= vx; //ブリッジは横移動出来ない
+          this.x -= this.vx; //ブリッジは横移動出来ない
         }
       }
 
@@ -88,7 +85,7 @@ phina.namespace(function() {
             .by({ y: -32 }, 250, "easeOutSine")
             .by({ y: 32 }, 250, "easeInSine")
             .call(() => this.isJump = false)
-          }
+        }
       }
 
       this.beforeFrame.collision = res1;
