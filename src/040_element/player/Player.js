@@ -88,6 +88,9 @@ phina.namespace(function() {
         }
       }
 
+      if (this.x < 16) this.x = 16;
+      if (this.y < 16) this.y = 16;
+
       this.beforeFrame.collision = res1;
       this.beforeFrame.floor = res2;
       this.beforeFrame.floorNumber = this.floorNumber;

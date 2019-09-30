@@ -22,7 +22,6 @@ phina.namespace(function() {
     },
 
     update: function() {
-      
     },
 
   });

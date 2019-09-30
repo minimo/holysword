@@ -16,6 +16,7 @@ phina.namespace(function() {
 
       this.collision = this.layerToArray("collision");
       this.floorData = this.layerToArray("floor");
+      this.event = this.layerToArray("event");
     },
 
     getCollisionData: function() {
