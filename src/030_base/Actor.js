@@ -41,7 +41,7 @@ phina.namespace(function() {
 
       this.on('enterframe', () => {
         //アニメーション
-        if (this.sprite && this.isAnimation && this.animationTime % this.animationInterval == 0) {
+        if (this.sprite && this.sprite_mask && this.isAnimation && this.animationTime % this.animationInterval == 0) {
           this.index = (this.index+1) % this.frame[this.nowAnimation].length;
           //次フレーム番号が特殊指定の場合
           var next = this.frame[this.nowAnimation][this.index];
@@ -55,7 +55,8 @@ phina.namespace(function() {
               //指定アニメーションへ変更
               this.setAnimation(next);
           } else {
-              this.sprite.frameIndex = next;
+            this.sprite.frameIndex = next;
+            this.sprite_mask.frameIndex = next;
           }
         }
         this.time++;

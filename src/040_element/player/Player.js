@@ -3,14 +3,29 @@ phina.namespace(function() {
   phina.define('Player', {
     superClass: 'Actor',
 
+    mapData: null,
+    collisionData: null,
+    floorData: null,
+
+    coverData: null,
+
     init: function() {
       this.superInit({ width: 32, height: 32 });
 
       this.setShadow();
 
-      this.sprite = Sprite("actor4", 32, 32)
+      this.sprite_mask = Sprite("actor4_mask", 32, 32)
         .setFrameIndex(0)
         .addChildTo(this);
+      this.sprite_mask.alpha = 0.5;
+
+      this.base = DisplayElement().addChildTo(this)
+
+      this.sprite = Sprite("actor4", 32, 32)
+        .setFrameIndex(0)
+        .addChildTo(this.base);
+
+      this.rectangleClip = RectangleClip().attachTo(this.base);
 
       this.nowAnimation = "down";
 
@@ -18,6 +33,8 @@ phina.namespace(function() {
         .setFrameIndex(0)
         .disable()
         .addChildTo(this);
+
+      this.coverData = [];
     },
 
     update: function() {
@@ -55,6 +72,9 @@ phina.namespace(function() {
       const x = this.x + this.vx;
       const y = this.y + this.vy;
 
+      //キャラクタが影に入る当たり判定の配列
+      this.coverData = [];
+
       //マップ当たり判定
       const res1 = this.checkCollision(x, y);
       const res2 = this.checkFloor(x, y);
@@ -65,9 +85,14 @@ phina.namespace(function() {
 
         //裏に回っているかの判定
         if (res1.isCover || res2.isCover) {
-          this.alpha = 0.5;
+          // this.alpha = 0.5;
+          this.calcCover();
         } else {
           this.alpha = 1.0;
+          this.rectangleClip.x = 0
+          this.rectangleClip.y = 0
+          this.rectangleClip.width = 32;
+          this.rectangleClip.height = 32;
         }
 
         //他フロアへ行く為のブリッジにいるか判定
@@ -122,13 +147,10 @@ phina.namespace(function() {
       return this;
     },
 
-    setCollisionData: function(collisionData) {
-      this.collisionData = collisionData;
-      return this;
-    },
-
-    setFloorData: function(floorData) {
-      this.floorData = floorData;
+    setMapData: function(mapData) {
+      this.mapData = mapData;
+      this.collisionData = mapData.getCollisionData();
+      this.floorData = mapData.getFloorData();
       return this;
     },
 
@@ -149,7 +171,10 @@ phina.namespace(function() {
             result.isCollision = true;
           } else {
             for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
-              if (e.floorNumber[i]) result.isCover = true;
+              if (e.floorNumber[i]) {
+                result.isCover = true;
+                this.coverData.push(e);
+              }
             }
           }
         }
@@ -191,6 +216,7 @@ phina.namespace(function() {
               if (e.floorNumber[i]) {
                 result.isCover = true;
                 result.floorNumber = i;
+                this.coverData.push(e);
               }
             }
           }
@@ -204,6 +230,40 @@ phina.namespace(function() {
       this._calcWorldMatrix();
       this.collision._calcWorldMatrix();
       return result;
+    },
+
+    //キャラクタに対し、カバーされた領域の計算
+    calcCover: function() {
+      const width_half = this.width * 0.5;
+      const height_half  = this.height * 0.5;
+      let x1 = 0;
+      let y1 = 0;
+      let x2 = 32;
+      let y2 = 32;
+
+      let isFull = false;
+
+      this.coverData.forEach(e => {
+        if (isFull) return;
+        const ex1 = e.x - this.x + width_half - e.width * 0.5;
+        const ey1 = e.y - this.y + height_half - e.height * 0.5;
+        const ex2 = ex1 + e.width;
+        const ey2 = ey1 + e.height;
+        //フルカバー判定
+        if (ex1 < 0 && ey1 < 0 && ex2 > 32 && ey2 > 32) isFull = true;
+        if (!isFull) {
+        }
+      });
+
+      if (isFull) {
+        x1 = y1 = 0;
+        x2 = y2 = 32;
+      }
+
+      this.rectangleClip.x = x1;
+      this.rectangleClip.y = y1;
+      this.rectangleClip.width = x2 - x1;
+      this.rectangleClip.height = y2 - y1;
     },
 
   });

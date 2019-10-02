@@ -10,6 +10,7 @@ phina.namespace(function() {
 
     setup: function(mapName) {
       this.data = phina.asset.AssetManager.get('tmx', mapName);
+
       Sprite(this.data.getImage())
         .setOrigin(0, 0)
         .addChildTo(this);
@@ -34,8 +35,8 @@ phina.namespace(function() {
         const element = DisplayElement({
           width: e.width,
           height: e.height,
-          x: e.x + e.width / 2,
-          y: e.y + e.height / 2,
+          x: e.x + e.width * 0.5,
+          y: e.y + e.height * 0.5,
         }).addChildTo(this);
         element.$extend(e.properties);
         if (e.properties.floorNumber) {

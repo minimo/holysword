@@ -45,6 +45,20 @@ phina.namespace(function() {
       back.setInteractive(true);
       back.on('pointend', () => this.exit("main"));
 
+      //アセット後処理
+      const assets = AssetList.get("preload");
+      assets.image.forIn(key => {
+        if (phina.asset.AssetManager.get("image", key + "_mask")) return;
+
+        const tex = phina.asset.AssetManager.get("image", key).clone();
+        tex.filter( function(pixel, index, x, y, bitmap) {
+            const data = bitmap.data;
+            data[index + 0] = 0;
+            data[index + 1] = 0;
+            data[index + 2] = 0;
+        });
+        phina.asset.AssetManager.set("image", key + "_mask", tex);
+      });
     },
 
     update: function() {
