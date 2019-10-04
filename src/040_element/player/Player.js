@@ -86,7 +86,7 @@ phina.namespace(function() {
         //裏に回っているかの判定
         if (res1.isCover || res2.isCover) {
           // this.alpha = 0.5;
-          this.calcCover();
+          // this.calcCover();
         } else {
           this.alpha = 1.0;
           this.rectangleClip.x = 0
@@ -115,6 +115,9 @@ phina.namespace(function() {
 
       if (this.x < 16) this.x = 16;
       if (this.y < 16) this.y = 16;
+
+      this.sprite_mask.x = this.sprite.x;
+      this.sprite_mask.y = this.sprite.y;
 
       this.beforeFrame.collision = res1;
       this.beforeFrame.floor = res2;
@@ -257,7 +260,7 @@ phina.namespace(function() {
 
       if (isFull) {
         x1 = y1 = 0;
-        x2 = y2 = 32;
+        x2 = y2 = 0;
       }
 
       this.rectangleClip.x = x1;

@@ -15,11 +15,23 @@ phina.namespace(function() {
 
       this.map = WorldMap("map1").addChildTo(this.mapBase);
 
-      this.mapLyer = [];
+      //レイヤー構築
+      this.mapLayer = [];
+      (NUM_LAYERS).times(i => {
+        const layer = DisplayElement().addChildTo(this.mapBase);
+        this.mapLayer[i] = layer;
+      });
+
+      //マスクレイヤー設定
+      this.clipMask = MultiRectangleClip().attachTo(this.mapLayer[LAYER_ACTORMASK]);
+      const collision = this.map.getCollisionData();
+      collision.forEach(e => {
+      });
+      const floor = this.map.getFloorData();
 
       this.player = Player()
         .setMapData(this.map)
-        .addChildTo(this.mapBase);
+        .addChildTo(this.mapLayer[LAYER_ACTOR]);
     },
 
     update: function() {
