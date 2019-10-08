@@ -35,6 +35,9 @@ phina.namespace(function() {
         floor: {},
       };
 
+      this.base = DisplayElement().addChildTo(this);
+      this.mask = DisplayElement().addChildTo(this);
+
       this.collision = DisplayElement({ width: 16, height: 8 })
         .setPosition(0, 16)
         .addChildTo(this)
@@ -74,7 +77,7 @@ phina.namespace(function() {
       this.shadow = Sprite("shadow")
         .setPosition(0, options.y)
         .setScale(options.scale)
-        .addChildTo(this);
+        .addChildTo(this.base);
       this.shadow.alpha = 0.5;
 
       return this;

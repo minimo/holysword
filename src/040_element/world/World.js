@@ -22,13 +22,6 @@ phina.namespace(function() {
         this.mapLayer[i] = layer;
       });
 
-      //マスクレイヤー設定
-      this.clipMask = MultiRectangleClip().attachTo(this.mapLayer[LAYER_ACTORMASK]);
-      const collision = this.map.getCollisionData();
-      collision.forEach(e => {
-      });
-      const floor = this.map.getFloorData();
-
       this.player = Player()
         .setMapData(this.map)
         .addChildTo(this.mapLayer[LAYER_ACTOR]);

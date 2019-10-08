@@ -14,18 +14,16 @@ phina.namespace(function() {
 
       this.setShadow();
 
-      this.sprite_mask = Sprite("actor4_mask", 32, 32)
-        .setFrameIndex(0)
-        .addChildTo(this);
-      this.sprite_mask.alpha = 0.5;
-
-      this.base = DisplayElement().addChildTo(this)
-
       this.sprite = Sprite("actor4", 32, 32)
         .setFrameIndex(0)
         .addChildTo(this.base);
 
-      this.rectangleClip = RectangleClip().attachTo(this.base);
+      this.sprite_mask = Sprite("actor4_mask", 32, 32)
+        .setFrameIndex(0)
+        .addChildTo(this.mask);
+      this.sprite_mask.alpha = 0.8;
+
+      this.rectangleClip = MultiRectangleClip().attachTo(this.mask);
 
       this.nowAnimation = "down";
 
@@ -76,32 +74,23 @@ phina.namespace(function() {
       this.coverData = [];
 
       //マップ当たり判定
-      const res1 = this.checkCollision(x, y);
-      const res2 = this.checkFloor(x, y);
+      const { resultCollision, resultFloor } = this.check(x, y);
+      const res1 = resultCollision;
+      const res2 = resultFloor;
+      // const res1 = this.checkCollision(x, y);
+      // const res2 = this.checkFloor(x, y);
       if (this.beforeFrame.collision.isCover && !this.beforeFrame.floor.isBridge) res2.isBridge = false;
       if (!res1.isCollision && res2.isCollision && res2.isOnFloor || res2.isBridge) {
         this.x += this.vx;
         this.y += this.vy;
 
-        //裏に回っているかの判定
-        if (res1.isCover || res2.isCover) {
-          // this.alpha = 0.5;
-          // this.calcCover();
-        } else {
-          this.alpha = 1.0;
-          this.rectangleClip.x = 0
-          this.rectangleClip.y = 0
-          this.rectangleClip.width = 32;
-          this.rectangleClip.height = 32;
-        }
-
         //他フロアへ行く為のブリッジにいるか判定
         if (res2.isBridge) {
-          this.alpha = 1.0;
           this.floorNumber = res2.floorNumber;
           this.x -= this.vx; //ブリッジは横移動出来ない
         }
       }
+      this.calcCover();
 
       if (ctrl.jump && !res2.isBridge) {
         if (!this.isJump) {
@@ -157,46 +146,34 @@ phina.namespace(function() {
       return this;
     },
 
-    checkCollision: function(x, y) {
+    check: function(x, y) {
       const ox = this.x;
       const oy = this.y;
       this.x = x;
       this.y = y;
       this._calcWorldMatrix();
       this.collision._calcWorldMatrix();
-      let result = {
+
+      const resultCollision = {
         isCollision: false,
         isCover: false,
       };
       this.collisionData.forEach(e => {
         if (this.collision.hitTestElement(e)) {
           if (e.floorNumber[this.floorNumber]) {
-            result.isCollision = true;
+            resultCollision.isCollision = true;
           } else {
             for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
               if (e.floorNumber[i]) {
-                result.isCover = true;
+                resultCollision.isCover = true;
                 this.coverData.push(e);
               }
             }
           }
         }
       });
-      this.x = ox;
-      this.y = oy;
-      this._calcWorldMatrix();
-      this.collision._calcWorldMatrix();
-      return result;
-    },
 
-    checkFloor: function(x, y) {
-      const ox = this.x;
-      const oy = this.y;
-      this.x = x;
-      this.y = y;
-      this._calcWorldMatrix();
-      this.collision._calcWorldMatrix();
-      let result = {
+      let resultFloor = {
         isCollision: false,
         isCover: false,
         isBridge: false,
@@ -204,69 +181,50 @@ phina.namespace(function() {
         isOnFloor: false,
       };
       if (this.floorNumber == 0) {
-        result.isCollision = true;
-        result.isOnFloor = true;
+        resultFloor.isCollision = true;
+        resultFloor.isOnFloor = true;
       }
       this.floorData.forEach(e => {
         if (this.collision.hitTestElement(e)) {
           if (e.bridge) {
-            result.isCollision = true;
-            result.isBridge = true;
+            resultFloor.isCollision = true;
+            resultFloor.isBridge = true;
           } else if (e.floorNumber[this.floorNumber]) {
               result.isCollision = true;
           } else {
             for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
               if (e.floorNumber[i]) {
-                result.isCover = true;
-                result.floorNumber = i;
+                resultFloor.isCover = true;
+                resultFloor.floorNumber = i;
                 this.coverData.push(e);
               }
             }
           }
           if (e.includeElement(this.collision)) {
-            result.isOnFloor = true;
+            resultFloor.isOnFloor = true;
           }
         }
       });
+
       this.x = ox;
       this.y = oy;
       this._calcWorldMatrix();
       this.collision._calcWorldMatrix();
-      return result;
+      return { resultCollision, resultFloor };
     },
 
-    //キャラクタに対し、カバーされた領域の計算
+    //キャラクタに対し、カバーされた領域のクリップを作成
     calcCover: function() {
-      const width_half = this.width * 0.5;
-      const height_half  = this.height * 0.5;
-      let x1 = 0;
-      let y1 = 0;
-      let x2 = 32;
-      let y2 = 32;
-
-      let isFull = false;
-
+      this.rectangleClip.clearClipRect();
       this.coverData.forEach(e => {
-        if (isFull) return;
-        const ex1 = e.x - this.x + width_half - e.width * 0.5;
-        const ey1 = e.y - this.y + height_half - e.height * 0.5;
-        const ex2 = ex1 + e.width;
-        const ey2 = ey1 + e.height;
-        //フルカバー判定
-        if (ex1 < 0 && ey1 < 0 && ex2 > 32 && ey2 > 32) isFull = true;
-        if (!isFull) {
-        }
+        const rect = {
+          x: e.x - this.x - e.width * 0.5,
+          y: e.y - this.y - e.height * 0.5,
+          width: e.width,
+          height: e.height,
+        };
+        this.rectangleClip.addClipRect(rect)
       });
-
-      if (isFull) {
-        x1 = y1 = 0;
-        x2 = y2 = 0;
-      }
-
-      this.rectangleClip.x = x1;
-      this.rectangleClip.y = y1;
-      this.rectangleClip.width = x2 - x1;
-      this.rectangleClip.height = y2 - y1;
     },
 
   });
