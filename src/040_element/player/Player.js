@@ -77,20 +77,20 @@ phina.namespace(function() {
       const { resultCollision, resultFloor } = this.check(x, y);
       const res1 = resultCollision;
       const res2 = resultFloor;
-      // const res1 = this.checkCollision(x, y);
-      // const res2 = this.checkFloor(x, y);
       if (this.beforeFrame.collision.isCover && !this.beforeFrame.floor.isBridge) res2.isBridge = false;
       if (!res1.isCollision && res2.isCollision && res2.isOnFloor || res2.isBridge) {
         this.x += this.vx;
         this.y += this.vy;
 
+        this.calcCover();
+
         //他フロアへ行く為のブリッジにいるか判定
         if (res2.isBridge) {
           this.floorNumber = res2.floorNumber;
           this.x -= this.vx; //ブリッジは横移動出来ない
+          this.rectangleClip.clearClipRect();
         }
       }
-      this.calcCover();
 
       if (ctrl.jump && !res2.isBridge) {
         if (!this.isJump) {
@@ -166,6 +166,14 @@ phina.namespace(function() {
             for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
               if (e.floorNumber[i]) {
                 resultCollision.isCover = true;
+              }
+            }
+          }
+        }
+        if (this.hitTestElement(e)) {
+          if (!e.floorNumber[this.floorNumber]) {
+            for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
+              if (e.floorNumber[i]) {
                 this.coverData.push(e);
               }
             }
@@ -173,7 +181,7 @@ phina.namespace(function() {
         }
       });
 
-      let resultFloor = {
+      const resultFloor = {
         isCollision: false,
         isCover: false,
         isBridge: false,
@@ -190,18 +198,26 @@ phina.namespace(function() {
             resultFloor.isCollision = true;
             resultFloor.isBridge = true;
           } else if (e.floorNumber[this.floorNumber]) {
-              result.isCollision = true;
+            resultFloor.isCollision = true;
           } else {
             for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
               if (e.floorNumber[i]) {
                 resultFloor.isCover = true;
                 resultFloor.floorNumber = i;
-                this.coverData.push(e);
               }
             }
           }
           if (e.includeElement(this.collision)) {
             resultFloor.isOnFloor = true;
+          }
+        }
+        if (this.hitTestElement(e)) {
+          if (!e.bridge && !e.floorNumber[this.floorNumber]) {
+            for (let i = this.floorNumber + 1; i < e.floorNumber.length; i++) {
+              if (e.floorNumber[i]) {
+                this.coverData.push(e);
+              }
+            }
           }
         }
       });
