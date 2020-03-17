@@ -20,6 +20,6 @@
     "filecopy": "^4.0.2",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.2"
   }
 }
