@@ -8,26 +8,27 @@ phina.namespace(function() {
     superClass: 'BaseScene',
 
     _static: {
-      isAssetLoad: false,
+      isAssetLoaded: false,
     },
 
     init: function(options) {
       this.superInit();
 
-      this.unlock = false;
-      this.loadcomplete = false;
       this.progress = 0;
+      this.isExit = false;
 
       //ロード済みならアセットロードをしない
-      if (TitleScene.isAssetLoad) {
+      if (TitleScene.isAssetLoaded) {
         this.setup();
       } else {
         //preload asset
         const assets = AssetList.get("preload")
         this.loader = phina.asset.AssetLoader();
+        this.loader.on('load', () => {
+          this.setup()
+          TitleScene.isAssetLoaded = true;
+        });
         this.loader.load(assets);
-        this.loader.on('load', () => this.setup());
-        TitleScene.isAssetLoad = true;
       }
     },
 
@@ -62,6 +63,12 @@ phina.namespace(function() {
     },
 
     update: function() {
+      if (!TitleScene.isAssetLoaded || this.isExit) return;
+      var kb = phina_app.keyboard;
+      if (kb.getKey("space") || kb.getKey("z")) {
+        this.isExit = true;
+        this.exit("main");
+      }
     },
 
   });
