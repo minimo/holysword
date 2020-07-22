@@ -28,6 +28,15 @@ phina.namespace(function() {
     },
 
     update: function() {
+      let wx = SCREEN_WIDTH_HALF - this.player.x;
+      let wy = SCREEN_HEIGHT_HALF - this.player.y;
+      if (wx > 0) wx = 0;
+      if (wy > 0) wy = 0;
+      const limitX = SCREEN_WIDTH_HALF - this.map.width;
+      const limitY = SCREEN_HEIGHT_HALF - this.map.height;
+      if (wx < limitX) wx = limitX;
+      if (wy < limitY) wy = limitY;
+      this.mapBase.setPosition(wx, wy);
     },
 
   });

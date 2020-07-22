@@ -11,9 +11,11 @@ phina.namespace(function() {
     setup: function(mapName) {
       this.data = phina.asset.AssetManager.get('tmx', mapName);
 
-      Sprite(this.data.getImage())
+      this.mapSprite = Sprite(this.data.getImage())
         .setOrigin(0, 0)
         .addChildTo(this);
+      this.width = this.mapSprite.width;
+      this.height = this.mapSprite.height;
 
       this.collision = this.layerToArray("collision");
       this.floorData = this.layerToArray("floor");
